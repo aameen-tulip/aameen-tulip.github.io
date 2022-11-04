@@ -450,7 +450,7 @@ Some <code>nix path-info</code> output reveals some more info:
 <pre class="src src-shell">  sh&gt; <span style="color: #dcaeea;">URL</span>=<span style="color: #98be65;">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>;
   sh&gt; <span style="color: #dcaeea;">FTOP</span>=<span style="color: #98be65;">"</span><span style="color: #51afef; font-weight: bold;">$( nix eval --raw --impure --expr '( builtins.fetchTree { type = \"file\"; url = \"</span><span style="color: #51afef; font-weight: bold;">$</span><span style="color: #51afef; font-weight: bold;">URL</span><span style="color: #51afef; font-weight: bold;">\"; } )</span><span style="color: #98be65;">.outPath'; )"</span>;
   sh&gt; <span style="color: #dcaeea;">FUOP</span>=<span style="color: #98be65;">"</span><span style="color: #51afef; font-weight: bold;">$( nix eval --raw --impure --expr 'builtins.fetchurl { url = \"</span><span style="color: #51afef; font-weight: bold;">$</span><span style="color: #51afef; font-weight: bold;">URL</span><span style="color: #51afef; font-weight: bold;">\"; }'; )</span><span style="color: #98be65;">"</span>;
-  sh&gt; nix path-info --json <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">FTOP</span><span style="color: #98be65;">"</span>|jq;
+  sh&gt; nix path-info --json <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">FUOP</span><span style="color: #98be65;">"</span>|jq;
   <span style="color: #51afef;">[</span>
     <span style="color: #c678dd;">{</span>
       <span style="color: #98be65;">"path"</span>: <span style="color: #98be65;">"/nix/store/n4alpyll6q2x61j79s5na7val380cx7g-lodash-4.17.21.tgz"</span>,
@@ -463,7 +463,7 @@ Some <code>nix path-info</code> output reveals some more info:
       <span style="color: #98be65;">"ultimate"</span>: true
     <span style="color: #c678dd;">}</span>
   <span style="color: #51afef;">]</span>
-  sh&gt; nix path-info --json <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">FUOP</span><span style="color: #98be65;">"</span>|jq;
+  sh&gt; nix path-info --json <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">FTOP</span><span style="color: #98be65;">"</span>|jq;
   <span style="color: #51afef;">[</span>
     <span style="color: #c678dd;">{</span>
       <span style="color: #98be65;">"path"</span>: <span style="color: #98be65;">"/nix/store/64icjs49plygl816k6hn23vcmi5ccgsn-source"</span>,
