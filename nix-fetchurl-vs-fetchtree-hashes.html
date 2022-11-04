@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-11-03 Thu 21:01 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nix fetchurl vs fetchTree hashes</title>
+<meta name="author" content="Alex Ameen" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+
+<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+<meta content='width=device-width, initial-scale=1, maximum-scale=1,
+               user-scalable=no'
+      name='viewport'>
+<style>html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  padding: 0;
+  margin: 0;
+  background: #f2f6fa;
+  color: #3c495a;
+  font-weight: normal;
+  font-size: 15px;
+  font-family: "San Francisco", "Roboto", "Arial", sans-serif;
+}
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+  color: #586b82;
+  padding: 0;
+  margin: 20px 0 10px 0;
+  font-size: 1.1em;
+}
+h2 {
+  margin: 30px 0 10px 0;
+  font-size: 1.2em;
+}
+a {
+  color: #3fa7ba;
+  text-decoration: none;
+}
+p {
+  margin: 6px 0;
+  text-align: justify;
+}
+ul,
+ol {
+  margin: 0;
+  text-align: justify;
+}
+ul > li > code {
+  color: #586b82;
+}
+pre {
+  white-space: pre-wrap;
+}
+#content {
+  width: 96%;
+  max-width: 1000px;
+  margin: 2% auto 6% auto;
+  background: white;
+  border-radius: 2px;
+  border-right: 1px solid #e2e9f0;
+  border-bottom: 2px solid #e2e9f0;
+  padding: 0 115px 150px 115px;
+  box-sizing: border-box;
+}
+#postamble {
+  display: none;
+}
+h1.title {
+  background-color: #343c44;
+  color: #fff;
+  margin: 0 -115px;
+  padding: 60px 0;
+  font-weight: normal;
+  font-size: 2em;
+  border-top-left-radius: 2px;
+  border-top-right-radius: 2px;
+}
+@media (max-width: 1050px) {
+  #content {
+    padding: 0 70px 100px 70px;
+  }
+  h1.title {
+    margin: 0 -70px;
+  }
+}
+@media (max-width: 800px) {
+  #content {
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0 4% 60px 4%;
+  }
+  h1.title {
+    margin: 0 -5%;
+    padding: 40px 5%;
+  }
+}
+pre,
+.verse {
+  box-shadow: none;
+  // background-color: #f9fbfd;
+  background-color: #f9fbfd;
+  border: 1px solid #e2e9f0;
+  color: #586b82;
+  padding: 10px;
+  font-family: monospace;
+  overflow: auto;
+  margin: 6px 0;
+}
+#table-of-contents {
+  margin-bottom: 50px;
+  margin-top: 50px;
+}
+#table-of-contents h2 {
+  margin-bottom: 5px;
+}
+#text-table-of-contents ul {
+  padding-left: 15px;
+}
+#text-table-of-contents > ul {
+  padding-left: 0;
+}
+#text-table-of-contents li {
+  list-style-type: none;
+}
+#text-table-of-contents a {
+  color: #7c8ca1;
+  font-size: 0.95em;
+  text-decoration: none;
+}
+table {
+  border-color: #586b82;
+  font-size: 0.95em;
+}
+table thead {
+  color: #586b82;
+}
+table tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+table tbody tr:hover {
+  background: #586b82 !important;
+  color: white;
+}
+table .left {
+  text-align: left;
+}
+table .right {
+  text-align: right;
+}
+.todo {
+  font-family: inherit;
+  color: inherit;
+}
+.done {
+  color: inherit;
+}
+.tag {
+  background: initial;
+}
+.tag > span {
+  background-color: #eee;
+  font-family: monospace;
+  padding-left: 7px;
+  padding-right: 7px;
+  border-radius: 2px;
+  float: right;
+  margin-left: 5px;
+}
+#text-table-of-contents .tag > span {
+  float: none;
+  margin-left: 0;
+}
+.timestamp {
+  color: #7c8ca1;
+}
+@media print {
+  @page {
+    margin-bottom: 3cm;
+    margin-top: 3cm;
+    margin-left: 2cm;
+    margin-right: 2cm;
+    font-size: 10px;
+  }
+  #content {
+    border: none;
+  }
+}
+</style>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Nix fetchurl vs fetchTree hashes</h1>
+<p>
+This is an odd one.
+</p>
+
+<p>
+I bumped into this trying to explain why <code>builtins.fetchurl</code> and <code>builtins.fetchTree { type = "file"; }</code> take different hashes.
+</p>
+
+<p>
+For context we are comparing:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nix">
+  <span style="color: #51afef;">let</span>
+    <span style="color: #dcaeea;">url</span>     = <span style="color: #98be65;">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>;
+    <span style="color: #dcaeea;">narHash</span> = <span style="color: #98be65;">"sha256-fn2qMkL7ePPYQyW/x9nvDOl05BDrC7VsfvyfW0xkQyE="</span>;
+    <span style="color: #dcaeea;">ftree</span> = builtins.fetchTree { <span style="color: #dcaeea;">type</span> = <span style="color: #98be65;">"file"</span>; <span style="color: #51afef;">inherit</span> url narHash; };
+    <span style="color: #5B6268;"># {</span>
+    <span style="color: #5B6268;">#   narHash = "sha256-fn2qMkL7ePPYQyW/x9nvDOl05BDrC7VsfvyfW0xkQyE=";</span>
+    <span style="color: #5B6268;">#   outPath = "/nix/store/64icjs49plygl816k6hn23vcmi5ccgsn-source";</span>
+    <span style="color: #5B6268;"># }</span>
+
+    <span style="color: #5B6268;"># Fails: sha256 mismatch...</span>
+    <span style="color: #5B6268;"># furl_bad0 = builtins.fetchurl { inherit url; sha256 = narHash; };</span>
+
+    <span style="color: #5B6268;"># Try matching the same outfile name ( which shouldn't matter )</span>
+    <span style="color: #5B6268;"># Fails: sha256 mismatch...</span>
+    <span style="color: #5B6268;"># furl_bad0 = builtins.fetchurl { inherit url; sha256 = narHash; name = "source"; };</span>
+
+    <span style="color: #dcaeea;">caHash</span> = builtins.hashFile <span style="color: #98be65;">"sha256"</span> ftree.outPath;
+    <span style="color: #5B6268;"># =&gt; "6a087ac9e5702a0c9d60fbcd48696012646ec8df1491dea472b150e79fcaf804"</span>
+
+    <span style="color: #5B6268;"># Use content addressed hash and voila</span>
+    <span style="color: #dcaeea;">furl</span> = builtins.fetchurl { <span style="color: #51afef;">inherit</span> url; <span style="color: #dcaeea;">sha256</span> = caHash; }
+    <span style="color: #5B6268;"># =&gt; "/nix/store/n4alpyll6q2x61j79s5na7val380cx7g-lodash-4.17.21.tgz"</span>
+  <span style="color: #51afef;">in</span> {
+    <span style="color: #51afef;">inherit</span> furl ftree;
+  }
+</pre>
+</div>
+
+
+<p>
+Okay so one seems to be CA and the other isn&rsquo;t, which I didn&rsquo;t realize mattered for &ldquo;fixed output derivations&rdquo; ( which I guess aren&rsquo;t CA ??? ).
+</p>
+
+<p>
+Also just for context:
+</p>
+<ul class="org-ul">
+<li>yes I am 100% positive the files are identical.</li>
+<li>yes I checked the full file <code>stat</code>.</li>
+<li>yes I diffed the tarballs.</li>
+<li>yes I am positive that the difference in filename doesn&rsquo;t matter.</li>
+</ul>
+
+<p>
+Some <code>nix path-info</code> output reveals some more info:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">  sh&gt; <span style="color: #dcaeea;">URL</span>=<span style="color: #98be65;">"https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz"</span>;
+  sh&gt; <span style="color: #dcaeea;">FTOP</span>=<span style="color: #98be65;">"</span><span style="color: #51afef; font-weight: bold;">$( nix eval --raw --impure --expr '( builtins.fetchTree { type = \"file\"; url = \"</span><span style="color: #51afef; font-weight: bold;">$</span><span style="color: #51afef; font-weight: bold;">URL</span><span style="color: #51afef; font-weight: bold;">\"; } )</span><span style="color: #98be65;">.outPath'; )"</span>;
+  sh&gt; <span style="color: #dcaeea;">FUOP</span>=<span style="color: #98be65;">"</span><span style="color: #51afef; font-weight: bold;">$( nix eval --raw --impure --expr 'builtins.fetchurl { url = \"</span><span style="color: #51afef; font-weight: bold;">$</span><span style="color: #51afef; font-weight: bold;">URL</span><span style="color: #51afef; font-weight: bold;">\"; }'; )</span><span style="color: #98be65;">"</span>;
+  sh&gt; nix path-info --json <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">FTOP</span><span style="color: #98be65;">"</span>|jq;
+  <span style="color: #51afef;">[</span>
+    <span style="color: #c678dd;">{</span>
+      <span style="color: #98be65;">"path"</span>: <span style="color: #98be65;">"/nix/store/n4alpyll6q2x61j79s5na7val380cx7g-lodash-4.17.21.tgz"</span>,
+      <span style="color: #98be65;">"narHash"</span>: <span style="color: #98be65;">"sha256-fn2qMkL7ePPYQyW/x9nvDOl05BDrC7VsfvyfW0xkQyE="</span>,
+      <span style="color: #98be65;">"narSize"</span>: 319080,
+      <span style="color: #98be65;">"references"</span>: <span style="color: #98be65;">[]</span>,
+      <span style="color: #98be65;">"ca"</span>: <span style="color: #98be65;">"fixed:sha256:017qragyfl5ifajdx48lvz46wr0jc1llikgvc2fhqakhwp4pl23a"</span>,
+      <span style="color: #98be65;">"deriver"</span>: <span style="color: #98be65;">"/nix/store/ccvfy7dilj5zvrz0vl4iria8ylmqzmb3-lodash-4.17.21.tgz.drv"</span>,
+      <span style="color: #98be65;">"registrationTime"</span>: 1666118258,
+      <span style="color: #98be65;">"ultimate"</span>: true
+    <span style="color: #c678dd;">}</span>
+  <span style="color: #51afef;">]</span>
+  sh&gt; nix path-info --json <span style="color: #98be65;">"</span><span style="color: #a9a1e1;">$</span><span style="color: #dcaeea;">FUOP</span><span style="color: #98be65;">"</span>|jq;
+  <span style="color: #51afef;">[</span>
+    <span style="color: #c678dd;">{</span>
+      <span style="color: #98be65;">"path"</span>: <span style="color: #98be65;">"/nix/store/64icjs49plygl816k6hn23vcmi5ccgsn-source"</span>,
+      <span style="color: #98be65;">"narHash"</span>: <span style="color: #98be65;">"sha256-fn2qMkL7ePPYQyW/x9nvDOl05BDrC7VsfvyfW0xkQyE="</span>,
+      <span style="color: #98be65;">"narSize"</span>: 319080,
+      <span style="color: #98be65;">"references"</span>: <span style="color: #98be65;">[]</span>,
+      <span style="color: #98be65;">"ca"</span>: <span style="color: #98be65;">"fixed:sha256:017qragyfl5ifajdx48lvz46wr0jc1llikgvc2fhqakhwp4pl23a"</span>,
+      <span style="color: #98be65;">"registrationTime"</span>: <span style="color: #da8548; font-weight: bold;">1665502179</span>
+    <span style="color: #c678dd;">}</span>
+  <span style="color: #51afef;">]</span>
+</pre>
+</div>
+
+<p>
+The difference to notice is that one has <code>deriver</code> ( internal <code>builtins:fetchurl</code> derivation generator ), and some mysterious <code>ultimate</code> arg.
+</p>
+
+<p>
+In any case, what we lerned is that <code>builtins.fetchurl</code> wants you to specify the CA hash, while <code>builtins.fetchTree</code> wants the <code>narHash</code>.
+</p>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Alex Ameen</p>
+<p class="date">Created: 2022-11-03 Thu 21:01</p>
+</div>
+</body>
+</html>
